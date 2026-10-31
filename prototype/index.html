@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ServiceCall Pro — Prototipo local</title>
+<style>
+  :root{--bg:#0f172a;--card:#ffffff;--ink:#111827;--muted:#6b7280;--brand:#f59e0b;--brand2:#0f766e;--line:#e5e7eb;--soft:#f8fafc}
+  *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--soft);color:var(--ink)}
+  header{background:var(--bg);color:white;padding:28px 18px 46px}.wrap{max-width:1120px;margin:0 auto}.top{display:flex;justify-content:space-between;align-items:center;gap:16px}.logo{font-weight:900;font-size:24px;letter-spacing:-.03em}.logo span{color:var(--brand)}
+  .pill{background:#1f2937;border:1px solid #374151;color:#e5e7eb;padding:8px 12px;border-radius:999px;font-size:13px}
+  h1{font-size:42px;line-height:.98;margin:30px 0 12px;max-width:720px;letter-spacing:-.04em}.sub{color:#cbd5e1;max-width:680px;font-size:17px;line-height:1.5}
+  .search{margin:-28px auto 22px;background:white;border:1px solid var(--line);border-radius:20px;padding:14px;display:grid;grid-template-columns:1.2fr .8fr auto;gap:10px;box-shadow:0 18px 45px rgba(15,23,42,.12)}
+  input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;background:white} button{border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer;background:var(--bg);color:white} button.primary{background:var(--brand);color:#111827} button.teal{background:var(--brand2);color:white} button.ghost{background:white;color:var(--ink);border:1px solid var(--line)}
+  main{padding:4px 18px 42px}.cats{display:flex;gap:10px;flex-wrap:wrap;margin:10px auto 20px}.cat{border:1px solid var(--line);background:white;border-radius:999px;padding:9px 13px;cursor:pointer;font-weight:700}.cat.active{background:#111827;color:white}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.05)}
+  .avatar{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;background:#fef3c7;font-size:26px}.row{display:flex;gap:12px;align-items:center}.muted{color:var(--muted)}.price{font-weight:900}.stars{color:#f59e0b}.badge{display:inline-flex;padding:4px 8px;border-radius:999px;background:#ecfdf5;color:#047857;font-size:12px;font-weight:800}.badge.blue{background:#eff6ff;color:#1d4ed8}
+  .layout{display:grid;grid-template-columns:1.55fr .9fr;gap:18px;align-items:start}@media(max-width:850px){.search,.layout{grid-template-columns:1fr}h1{font-size:34px}}
+  .steps{display:grid;gap:10px}.step{display:flex;gap:10px;align-items:flex-start}.dot{width:26px;height:26px;border-radius:50%;background:#e5e7eb;display:grid;place-items:center;font-weight:900;flex:none}.step.done .dot{background:var(--brand2);color:white}.step.now .dot{background:var(--brand);color:#111827}
+  dialog{border:0;border-radius:22px;padding:0;max-width:560px;width:calc(100% - 28px);box-shadow:0 30px 80px rgba(0,0,0,.3)}dialog::backdrop{background:rgba(15,23,42,.55)}.modal{padding:22px}.modal h2{margin:0 0 8px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.hidden{display:none}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="top"><div class="logo">ServiceCall <span>Pro</span></div><div class="pill">Prototipo local · Puebla / Cholula</div></div><h1>Encuentra un pro de confianza, sin estar persiguiendo llamadas.</h1><p class="sub">Plomería, albañilería, jardinería, electricidad y más. Pide el servicio, recibe aceptación o cotización, sigue el estatus y paga cuando el trabajo quede hecho.</p></div></header>
+<main class="wrap">
+  <section class="search"><input id="q" placeholder="¿Qué necesitas? Ej. fuga, boiler, pasto, pintura" /><select id="area"><option>Puebla Centro</option><option>Cholula</option><option>Angelópolis</option><option>La Paz</option><option>Cuautlancingo</option></select><button class="primary" onclick="filterPros()">Buscar pros</button></section>
+  <section class="cats" id="cats"></section>
+  <div class="layout"><section><h2>Pros disponibles</h2><div class="grid" id="pros"></div></section>
+  <aside class="card"><h2 style="margin-top:0">Así se mueve un trabajo</h2><div class="steps" id="steps"></div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><p class="muted">Este panel simula lo que verán cliente y pro en la app real: solicitud, aceptación, llegada, avance, pago y reseña.</p><button class="teal" onclick="advanceStep()">Simular siguiente estatus</button></aside></div>
+</main>
+<dialog id="dlg"><div class="modal"><h2 id="dlgTitle">Solicitar servicio</h2><p class="muted" id="dlgSub"></p><label>Describe el problema<textarea id="problem" rows="4" placeholder="Ej. Tengo una fuga debajo del fregadero y está mojando el mueble..."></textarea></label><label>Ventana de horario<select id="when"><option>Lo antes posible</option><option>Hoy en la tarde</option><option>Mañana en la mañana</option><option>Esta semana</option></select></label><div class="actions"><button class="primary" onclick="sendRequest()">Enviar solicitud</button><button class="ghost" onclick="dlg.close()">Cancelar</button></div><p id="sent" class="hidden" style="font-weight:800;color:#047857">Solicitud enviada. El pro recibió tu pedido y puede aceptar o cotizar.</p></div></dialog>
+<script>
+const categories=['Plomería','Albañilería','Jardinería','Electricidad','HVAC','Pintura','Handyman','Limpieza'];
+const pros=[
+ {name:'Mario Hernández',trade:'Plomería',emoji:'🔧',rating:4.9,jobs:132,dist:'1.8 km',price:'Desde $450 MXN',tag:'Verificado',keys:'fuga boiler plomeria tubo agua'},
+ {name:'Construcciones Roca',trade:'Albañilería',emoji:'🧱',rating:4.8,jobs:89,dist:'3.2 km',price:'Cotización',tag:'Equipo',keys:'albanileria muro cemento losa remodelacion'},
+ {name:'Verde Vivo Jardines',trade:'Jardinería',emoji:'🌿',rating:5.0,jobs:214,dist:'2.4 km',price:'Desde $600 MXN',tag:'Top pro',keys:'pasto jardin poda landscaping cesped'},
+ {name:'ElectroPuebla',trade:'Electricidad',emoji:'⚡',rating:4.7,jobs:76,dist:'4.1 km',price:'Desde $400 MXN',tag:'Verificado',keys:'electrico apagones contactos lampara tablero'},
+ {name:'Clima Total',trade:'HVAC',emoji:'❄️',rating:4.9,jobs:143,dist:'5.0 km',price:'Desde $750 MXN',tag:'Garantía',keys:'aire acondicionado clima minisplit hvac'},
+ {name:'Pinta Bien MX',trade:'Pintura',emoji:'🎨',rating:4.8,jobs:67,dist:'2.9 km',price:'Cotización',tag:'Residencial',keys:'pintura casa pared interior exterior'}];
+let activeCat='Todos', step=0; const steps=['Solicitado','Aceptado','En camino','Llegó','En progreso','Completado','Pagado','Reseñado'];
+function renderCats(){document.getElementById('cats').innerHTML=['Todos',...categories].map(c=>`<button class="cat ${c===activeCat?'active':''}" onclick="activeCat='${c}';renderCats();renderPros()">${c}</button>`).join('')}
+function renderPros(list=pros){document.getElementById('pros').innerHTML=list.map(p=>`<article class="card"><div class="row"><div class="avatar">${p.emoji}</div><div><strong>${p.name}</strong><div class="muted">${p.trade} · ${p.dist}</div></div></div><p><span class="stars">★★★★★</span> <strong>${p.rating}</strong> <span class="muted">(${p.jobs} trabajos)</span></p><p class="price">${p.price}</p><p><span class="badge">${p.tag}</span> <span class="badge blue">Responde hoy</span></p><button class="primary" onclick="openRequest('${p.name}','${p.trade}')">Solicitar ${p.trade}</button></article>`).join('') || '<p class="muted">No hay pros con ese filtro todavía.</p>'}
+function filterPros(){const q=document.getElementById('q').value.toLowerCase(); const list=pros.filter(p=>(activeCat==='Todos'||p.trade===activeCat)&&(!q||(p.trade+' '+p.keys+' '+p.name).toLowerCase().includes(q))); renderPros(list)}
+function renderSteps(){document.getElementById('steps').innerHTML=steps.map((s,i)=>`<div class="step ${i<step?'done':i===step?'now':''}"><div class="dot">${i<step?'✓':i+1}</div><div><strong>${s}</strong><div class="muted">${i===step?'Estatus actual simulado':' '}</div></div></div>`).join('')}
+function advanceStep(){step=Math.min(step+1,steps.length-1);renderSteps()}
+const dlg=document.getElementById('dlg'); function openRequest(name,trade){document.getElementById('dlgTitle').textContent='Solicitar '+trade;document.getElementById('dlgSub').textContent=name+' recibirá tu descripción, zona y horario preferido.';document.getElementById('sent').classList.add('hidden');dlg.showModal()}
+function sendRequest(){document.getElementById('sent').classList.remove('hidden'); step=1; renderSteps(); setTimeout(()=>dlg.close(),900)}
+renderCats();renderPros();renderSteps();
+</script>
+</body></html>
